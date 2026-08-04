@@ -25,11 +25,8 @@ function setWaktu() {
 }
 
 // Navigasi Pindah Halaman
-function pindahHalaman(idHalaman, elemenNav, judul) {
+function pindahHalaman(idHalaman, elemenNav) {
     halamanAktif = idHalaman;
-    
-    // Ubah Judul Atas
-    document.getElementById('header-title').innerText = judul;
     
     // Tampilkan/Sembunyikan Tombol Plus
     document.getElementById('btn-add').style.display = (idHalaman === 'home') ? 'none' : 'flex';
@@ -45,7 +42,7 @@ function pindahHalaman(idHalaman, elemenNav, judul) {
     renderData();
 }
 
-// Modal Form (Pintar: Menyesuaikan halaman yang sedang dibuka)
+// Modal Form
 function bukaModal() {
     document.getElementById('modal').style.display = 'flex';
     document.getElementById('form-jadwal').style.display = 'none';
@@ -67,11 +64,41 @@ function bukaModal() {
 
 function tutupModal() {
     document.getElementById('modal').style.display = 'none';
-    // Reset input
     document.getElementById('j-mapel').value = '';
     document.getElementById('t-mapel').value = '';
-    document.getElementById('t-tanggal').value = '';
     document.getElementById('t-anggota').value = '';
+}
+
+// MENGHITUNG TANGGAL OTOMATIS BERDASARKAN JADWAL
+function cariTanggalTerdekat(mapelCari) {
+    const hariIndex = { 'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+    
+    // Cari semua hari dimana mapel tersebut diajarkan (Case Insensitive)
+    const jadwalMapel = dataJadwal.filter(j => j.mapel.toLowerCase().trim() === mapelCari.toLowerCase().trim());
+
+    if (jadwalMapel.length === 0) return null; // Mapel tidak ada di jadwal
+
+    let hariIni = new Date();
+    let indexHariIni = hariIni.getDay(); // 0-6
+
+    let selisihHariTerkecil = 99;
+
+    // Cari jadwal yang paling dekat harinya dari hari ini
+    jadwalMapel.forEach(j => {
+        let targetIndex = hariIndex[j.hari];
+        let selisih = targetIndex - indexHariIni;
+        
+        // Jika harinya sudah lewat minggu ini, atau hari ini (berarti kumpul minggu depan)
+        if (selisih <= 0) selisih += 7; 
+        
+        if (selisih < selisihHariTerkecil) selisihHariTerkecil = selisih;
+    });
+
+    // Buat tanggal target
+    let tanggalTarget = new Date();
+    tanggalTarget.setDate(hariIni.getDate() + selisihHariTerkecil);
+
+    return tanggalTarget.toISOString().split('T')[0]; // Return YYYY-MM-DD
 }
 
 // Simpan Data
@@ -80,25 +107,30 @@ function simpanData() {
     if (halamanAktif === 'jadwal') {
         const hari = document.getElementById('j-hari').value;
         const mapel = document.getElementById('j-mapel').value;
-        const jam = document.getElementById('j-jam').value;
         if(!mapel) return alert("Mapel harus diisi!");
-        dataJadwal.push({ id, hari, mapel, jam });
+        dataJadwal.push({ id, hari, mapel });
         localStorage.setItem('dataJadwal', JSON.stringify(dataJadwal));
     } 
-    else if (halamanAktif === 'pr') {
+    else {
         const mapel = document.getElementById('t-mapel').value;
-        const tanggal = document.getElementById('t-tanggal').value;
-        if(!mapel || !tanggal) return alert("Mapel dan Tanggal harus diisi!");
-        dataPR.push({ id, mapel, tanggal });
-        localStorage.setItem('dataPR', JSON.stringify(dataPR));
-    }
-    else if (halamanAktif === 'kelompok') {
-        const mapel = document.getElementById('t-mapel').value;
-        const tanggal = document.getElementById('t-tanggal').value;
-        const anggota = document.getElementById('t-anggota').value;
-        if(!mapel || !tanggal) return alert("Mapel dan Tanggal harus diisi!");
-        dataKelompok.push({ id, mapel, tanggal, anggota });
-        localStorage.setItem('dataKelompok', JSON.stringify(dataKelompok));
+        if(!mapel) return alert("Mata pelajaran harus diisi!");
+
+        // Dapatkan tanggal otomatis
+        const tanggalOtomatis = cariTanggalTerdekat(mapel);
+        if (!tanggalOtomatis) {
+            alert(`Mapel "${mapel}" tidak ditemukan di Jadwal! Silakan tambahkan ke Jadwal terlebih dahulu agar sistem tahu hari pengumpulannya.`);
+            return;
+        }
+
+        if (halamanAktif === 'pr') {
+            dataPR.push({ id, mapel, tanggal: tanggalOtomatis });
+            localStorage.setItem('dataPR', JSON.stringify(dataPR));
+        }
+        else if (halamanAktif === 'kelompok') {
+            const anggota = document.getElementById('t-anggota').value;
+            dataKelompok.push({ id, mapel, tanggal: tanggalOtomatis, anggota });
+            localStorage.setItem('dataKelompok', JSON.stringify(dataKelompok));
+        }
     }
 
     tutupModal();
@@ -120,37 +152,78 @@ function hapusData(tipe, id) {
     renderData();
 }
 
-// Render (Tampilkan) Data ke Layar
+// Format Tanggal untuk Tampilan Indonesia
+function formatTanggalIndo(tglStr) {
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    return new Date(tglStr).toLocaleDateString('id-ID', options);
+}
+
+// Render Data ke Layar
 function renderData() {
-    // Render Jadwal
+    // 1. Render Home (Tugas Mendatang)
+    const homeList = document.getElementById('home-pr-list');
+    homeList.innerHTML = '';
+    const semuaTugas = [...dataPR, ...dataKelompok];
+    
+    // Urutkan tugas berdasarkan tanggal terdekat
+    semuaTugas.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+    if (semuaTugas.length === 0) {
+        homeList.innerHTML = `<div class="all-done">All done 🎉</div>`;
+    } else {
+        semuaTugas.forEach(d => {
+            let info = d.anggota ? `(Kelompok)` : `(PR)`;
+            homeList.innerHTML += `
+                <li>
+                    <strong>${d.mapel} ${info}</strong> 
+                    <span style="font-size:12px; opacity:0.8;">${formatTanggalIndo(d.tanggal)}</span>
+                </li>`;
+        });
+    }
+
+    // 2. Render Jadwal (Model Note 7 Hari)
     const listJ = document.getElementById('list-jadwal');
     listJ.innerHTML = '';
-    dataJadwal.forEach(d => {
+    const urutanHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+    
+    urutanHari.forEach(hari => {
+        const mapelHariIni = dataJadwal.filter(j => j.hari === hari);
+        let htmlMapel = '';
+        
+        if (mapelHariIni.length === 0) {
+            htmlMapel = `<li style="justify-content:center; color:#bbb; border:none; font-style:italic;">Kosong</li>`;
+        } else {
+            mapelHariIni.forEach(m => {
+                htmlMapel += `<li>${m.mapel} <button onclick="hapusData('jadwal', ${m.id})">✖</button></li>`;
+            });
+        }
+
         listJ.innerHTML += `
-            <div class="list-card">
-                <div class="list-info"><h4>${d.mapel}</h4><p>${d.hari}, Jam: ${d.jam || '-'}</p></div>
-                <button class="btn-del" onclick="hapusData('jadwal', ${d.id})">Hapus</button>
-            </div>`;
+            <div class="note-card">
+                <h4>${hari}</h4>
+                <ul>${htmlMapel}</ul>
+            </div>
+        `;
     });
 
-    // Render PR
+    // 3. Render PR
     const listP = document.getElementById('list-pr');
     listP.innerHTML = '';
     dataPR.forEach(d => {
         listP.innerHTML += `
             <div class="list-card" style="border-left-color: #FF9800;">
-                <div class="list-info"><h4>${d.mapel}</h4><p>Tenggat: ${d.tanggal}</p></div>
+                <div class="list-info"><h4>${d.mapel}</h4><p>Kumpul: ${formatTanggalIndo(d.tanggal)}</p></div>
                 <button class="btn-del" onclick="hapusData('pr', ${d.id})">Selesai</button>
             </div>`;
     });
 
-    // Render Kelompok
+    // 4. Render Kelompok
     const listK = document.getElementById('list-kelompok');
     listK.innerHTML = '';
     dataKelompok.forEach(d => {
         listK.innerHTML += `
             <div class="list-card" style="border-left-color: #4CAF50;">
-                <div class="list-info"><h4>${d.mapel}</h4><p>Tenggat: ${d.tanggal} <br> Anggota: ${d.anggota || '-'}</p></div>
+                <div class="list-info"><h4>${d.mapel}</h4><p>Kumpul: ${formatTanggalIndo(d.tanggal)} <br> Anggota: ${d.anggota || '-'}</p></div>
                 <button class="btn-del" onclick="hapusData('kelompok', ${d.id})">Selesai</button>
             </div>`;
     });

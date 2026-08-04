@@ -8,11 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4A90E2;
+            --primary: #1E88E5;
             --bg: #F8F9FA;
             --card: #FFFFFF;
             --text: #2C3E50;
             --text-light: #95A5A6;
+            --note-bg: #FFF9C4;
+            --note-line: #FBC02D;
         }
         body { 
             font-family: 'Poppins', sans-serif; 
@@ -21,39 +23,52 @@
             margin: 0; padding: 0;
             overflow-x: hidden;
         }
-        /* HEADER ATAS */
+
+        /* HEADER ATAS (Hanya Tombol Plus di Kanan) */
         .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: white; padding: 15px 20px; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10;
+            position: fixed; top: 0; right: 0; width: 100%;
+            padding: 15px 20px; box-sizing: border-box;
+            display: flex; justify-content: flex-end; align-items: center;
+            z-index: 10; pointer-events: none; /* Supaya tidak menghalangi klik */
         }
-        .top-bar h2 { margin: 0; font-size: 18px; color: var(--primary); }
         .btn-plus {
-            background: var(--primary); color: white; border: none;
-            width: 35px; height: 35px; border-radius: 50%; font-size: 24px;
+            background: #FF9800; color: white; border: none;
+            width: 45px; height: 45px; border-radius: 50%; font-size: 28px;
             display: flex; justify-content: center; align-items: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
-            display: none; /* Sembunyi di Home */
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            pointer-events: auto; display: none; /* Sembunyi di Home */
         }
 
         /* AREA KONTEN (PAGES) */
-        .content-area {
-            margin-top: 65px; margin-bottom: 70px; padding: 20px;
-        }
+        .content-area { padding-bottom: 70px; }
         .page { display: none; animation: fadeIn 0.3s; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* DESAIN HALAMAN HOME (Tengah Layar) */
+        /* DESAIN HOME (Background Biru Penuh) */
         #page-home {
-            height: 70vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
+            background: linear-gradient(135deg, #1E88E5, #1565C0);
+            min-height: 100vh; color: white;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 60px 20px 20px; box-sizing: border-box;
         }
-        #sapaan { font-size: 32px; font-weight: 600; color: var(--primary); margin: 0; }
-        #tanggal-hari { font-size: 14px; color: var(--text-light); margin-top: 5px; }
+        #sapaan { font-size: 32px; font-weight: 600; margin: 20px 0 5px; }
+        #tanggal-hari { font-size: 14px; opacity: 0.8; margin-bottom: 30px; }
+        
+        .home-tasks {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px); width: 100%;
+            border-radius: 15px; padding: 20px; box-sizing: border-box;
+        }
+        .home-tasks h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+        .home-task-list { list-style: none; padding: 0; margin: 0; }
+        .home-task-list li { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between;}
+        .all-done { text-align: center; font-style: italic; opacity: 0.7; font-size: 18px; margin: 20px 0; font-weight: 600;}
 
-        /* KARTU DAFTAR */
+        /* DESAIN HALAMAN LAIN (Jadwal, PR, Kelompok) */
+        .page-content { padding: 60px 20px 20px; }
+
+        /* KARTU DAFTAR (Untuk PR & Kelompok) */
         .list-card {
             background: var(--card); padding: 15px; border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px;
@@ -64,11 +79,24 @@
         .list-info p { margin: 4px 0 0; font-size: 12px; color: var(--text-light); }
         .btn-del { background: #FF5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
+        /* DESAIN NOTE JADWAL */
+        .note-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .note-card {
+            background: var(--note-bg); border-left: 6px solid var(--note-line);
+            padding: 15px; border-radius: 5px 15px 15px 5px;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.05);
+        }
+        .note-card h4 { margin: 0 0 10px 0; font-size: 16px; color: #D4A31C; text-transform: uppercase; border-bottom: 1px dashed #D4A31C; padding-bottom: 5px; }
+        .note-card ul { list-style: none; padding: 0; margin: 0; }
+        .note-card li { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: #555; }
+        .note-card li button { background: transparent; color: red; border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
+
         /* NAVIGASI BAWAH */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: white; display: flex; justify-content: space-around;
             padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 10;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
         }
         .nav-item {
             text-align: center; color: var(--text-light); font-size: 12px;
@@ -89,58 +117,70 @@
         .modal-box h3 { margin-top: 0; color: var(--primary); }
         input, select, button.btn-save {
             width: 100%; padding: 12px; margin-top: 10px;
-            border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif;
+            border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; background: #fafafa;
         }
-        button.btn-save { background: var(--primary); color: white; border: none; font-weight: bold; margin-top: 15px; }
-        button.btn-close { background: transparent; border: none; color: #888; width: 100%; margin-top: 10px; }
+        button.btn-save { background: var(--primary); color: white; border: none; font-weight: bold; margin-top: 15px; font-size: 15px;}
+        button.btn-close { background: transparent; border: none; color: #888; width: 100%; margin-top: 10px; font-weight: 600;}
     </style>
 </head>
 <body>
 
-    <!-- Header Atas -->
+    <!-- Header Atas (Hanya Tombol) -->
     <div class="top-bar">
-        <h2 id="header-title">Home</h2>
         <button class="btn-plus" id="btn-add" onclick="bukaModal()">+</button>
     </div>
 
     <!-- Area Halaman -->
     <div class="content-area">
         
-        <!-- Halaman 1: Home -->
+        <!-- Halaman 1: Home (Biru Full) -->
         <div id="page-home" class="page active">
             <h1 id="sapaan">Selamat ...</h1>
             <p id="tanggal-hari"></p>
+
+            <div class="home-tasks">
+                <h3>Tugas Mendatang</h3>
+                <ul class="home-task-list" id="home-pr-list">
+                    <!-- PR muncul di sini -->
+                </ul>
+            </div>
         </div>
 
-        <!-- Halaman 2: Jadwal -->
+        <!-- Halaman 2: Jadwal (Desain Note) -->
         <div id="page-jadwal" class="page">
-            <h3 style="margin-top:0;">Jadwal Pelajaran</h3>
-            <div id="list-jadwal"></div>
+            <div class="page-content">
+                <h3 style="margin-top:0; color:var(--primary);">Jadwal Mingguan</h3>
+                <div class="note-grid" id="list-jadwal"></div>
+            </div>
         </div>
 
         <!-- Halaman 3: PR -->
         <div id="page-pr" class="page">
-            <h3 style="margin-top:0;">Daftar PR Belum Selesai</h3>
-            <div id="list-pr"></div>
+            <div class="page-content">
+                <h3 style="margin-top:0; color:var(--primary);">Daftar PR</h3>
+                <div id="list-pr"></div>
+            </div>
         </div>
 
         <!-- Halaman 4: Kelompok -->
         <div id="page-kelompok" class="page">
-            <h3 style="margin-top:0;">Tugas Kelompok Aktif</h3>
-            <div id="list-kelompok"></div>
+            <div class="page-content">
+                <h3 style="margin-top:0; color:var(--primary);">Tugas Kelompok</h3>
+                <div id="list-kelompok"></div>
+            </div>
         </div>
 
     </div>
 
     <!-- Navigasi Bawah -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="pindahHalaman('home', this, 'Home')">Home</div>
-        <div class="nav-item" onclick="pindahHalaman('jadwal', this, 'Jadwal')">Jadwal</div>
-        <div class="nav-item" onclick="pindahHalaman('pr', this, 'Tugas PR')">PR</div>
-        <div class="nav-item" onclick="pindahHalaman('kelompok', this, 'Kelompok')">Kelompok</div>
+        <div class="nav-item active" onclick="pindahHalaman('home', this)">Home</div>
+        <div class="nav-item" onclick="pindahHalaman('jadwal', this)">Jadwal</div>
+        <div class="nav-item" onclick="pindahHalaman('pr', this)">PR</div>
+        <div class="nav-item" onclick="pindahHalaman('kelompok', this)">Kelompok</div>
     </div>
 
-    <!-- Modal Popup Form (Dinamis) -->
+    <!-- Modal Popup Form -->
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <h3 id="modal-title">Tambah Data</h3>
@@ -151,16 +191,17 @@
                     <option value="Senin">Senin</option><option value="Selasa">Selasa</option>
                     <option value="Rabu">Rabu</option><option value="Kamis">Kamis</option>
                     <option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option>
+                    <option value="Ahad">Ahad</option>
                 </select>
                 <input type="text" id="j-mapel" placeholder="Mata Pelajaran">
-                <input type="time" id="j-jam">
             </div>
 
-            <!-- Form PR & Kelompok (Digabung, fieldnya mirip) -->
+            <!-- Form PR & Kelompok (Tanpa Input Tanggal) -->
             <div id="form-tugas" style="display:none;">
-                <input type="text" id="t-mapel" placeholder="Judul / Mapel">
-                <label style="font-size:12px; color:#888; margin-top:10px; display:block;">Tenggat Waktu:</label>
-                <input type="date" id="t-tanggal">
+                <p style="font-size:11px; color:#888; margin:0 0 10px 0; line-height:1.4;">
+                    *Tenggat waktu akan otomatis diatur ke jadwal mapel terdekat. Pastikan mapel sudah ada di Jadwal.
+                </p>
+                <input type="text" id="t-mapel" placeholder="Masukkan Mata Pelajaran">
                 <input type="text" id="t-anggota" placeholder="Nama Anggota (Hanya untuk kelompok)" style="display:none;">
             </div>
 
