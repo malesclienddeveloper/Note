@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengingat PR & Kelompok</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+        input, select, button { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; font-weight: bold; }
+        .alert { background-color: #ffcccc; padding: 10px; color: red; border-radius: 5px; display: none; margin-bottom: 15px;}
+    </style>
+</head>
+<body>
+
+    <h2>Asisten Tugas Sekolah</h2>
+    
+    <div id="reminderAlert" class="alert">
+        <strong>⚠️ PENGINGAT:</strong> Ada PR yang harus dikumpulkan besok!
+        <ul id="besokList"></ul>
+    </div>
+
+    <div class="card">
+        <h3>Tambah Tugas / PR</h3>
+        <input type="text" id="mapel" placeholder="Mata Pelajaran (Contoh: Matematika)">
+        <label>Tanggal Dikumpulkan:</label>
+        <input type="date" id="tanggal">
+        <input type="text" id="kelompok" placeholder="Anggota Kelompok (Opsional, pisahkan dengan koma)">
+        <button onclick="simpanTugas()">Simpan Tugas</button>
+    </div>
+
+    <div class="card">
+        <h3>Daftar Tugas Belum Selesai</h3>
+        <ul id="daftarTugas"></ul>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
