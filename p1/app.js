@@ -1,10 +1,15 @@
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => reg.update());
+    });
 }
 
 let dataJadwal = JSON.parse(localStorage.getItem('dataJadwal')) || [];
 let dataPR = JSON.parse(localStorage.getItem('dataPR')) || [];
 let dataKelompok = JSON.parse(localStorage.getItem('dataKelompok')) || [];
+
+// ARRAY URUTAN HALAMAN UNTUK FITUR SWIPE
+const urutanHalaman = ['home', 'jadwal', 'pr', 'kelompok'];
 let halamanAktif = 'home';
 
 function setWaktu() {
@@ -20,22 +25,86 @@ function setWaktu() {
 }
 
 function pindahHalaman(idHalaman, elemenNav) {
-    halamanAktif = idHalaman;
+    const indexLama = urutanHalaman.indexOf(halamanAktif);
+    const indexBaru = urutanHalaman.indexOf(idHalaman);
     
-    // Tombol Plus hanya tampil jika BUKAN di Home
+    // Tentukan Animasi Visual (Kiri atau Kanan)
+    let animasiCSS = 'fadePage';
+    if (indexBaru > indexLama) animasiCSS = 'slideLeft';
+    else if (indexBaru < indexLama) animasiCSS = 'slideRight';
+
+    halamanAktif = idHalaman;
     document.getElementById('btn-add').style.display = (idHalaman === 'home') ? 'none' : 'flex';
+    
+    // Reset dan ganti page aktif
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+        page.style.animation = 'none'; // Reset animasi sebelumnya
+    });
+    
+    const pageAktif = document.getElementById('page-' + idHalaman);
+    pageAktif.classList.add('active');
 
-    // Pindah Halaman
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('page-' + idHalaman).classList.add('active');
+    // Berikan efek meluncur (kecuali home yang punya animasi sendiri)
+    if (idHalaman !== 'home') {
+        pageAktif.style.animation = `${animasiCSS} 0.25s ease forwards`;
+    }
 
-    // Ubah status Navigasi
+    // Ubah warna menu bawah
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
     elemenNav.classList.add('active');
-
-    // Render ulang data jika perlu
     renderData();
 }
+
+// ==========================================
+// FITUR SWIPE (GESER KANAN & KIRI)
+// ==========================================
+let touchstartX = 0;
+let touchendX = 0;
+let touchstartY = 0;
+let touchendY = 0;
+
+document.addEventListener('touchstart', e => {
+    touchstartX = e.changedTouches[0].screenX;
+    touchstartY = e.changedTouches[0].screenY;
+}, false);
+
+document.addEventListener('touchend', e => {
+    touchendX = e.changedTouches[0].screenX;
+    touchendY = e.changedTouches[0].screenY;
+    handleSwipe();
+}, false);
+
+function handleSwipe() {
+    // Jangan izinkan slide jika modal popup sedang terbuka
+    if (document.getElementById('modal').style.display === 'flex') return;
+
+    const diffX = touchstartX - touchendX;
+    const diffY = touchstartY - touchendY;
+    
+    // Jika scroll atas-bawah (vertikal) lebih dominan, JANGAN pindah tab!
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    const threshold = 60; // Sensitivitas geser (60px)
+    const indexSekarang = urutanHalaman.indexOf(halamanAktif);
+
+    if (diffX > threshold) {
+        // GESER KE KIRI (Ke Halaman Selanjutnya)
+        if (indexSekarang < urutanHalaman.length - 1) {
+            const nextId = urutanHalaman[indexSekarang + 1];
+            const nextNav = document.querySelectorAll('.nav-item')[indexSekarang + 1];
+            pindahHalaman(nextId, nextNav);
+        }
+    } else if (diffX < -threshold) {
+        // GESER KE KANAN (Ke Halaman Sebelumnya)
+        if (indexSekarang > 0) {
+            const prevId = urutanHalaman[indexSekarang - 1];
+            const prevNav = document.querySelectorAll('.nav-item')[indexSekarang - 1];
+            pindahHalaman(prevId, prevNav);
+        }
+    }
+}
+// ==========================================
 
 function bukaModal() {
     document.getElementById('modal').style.display = 'flex';

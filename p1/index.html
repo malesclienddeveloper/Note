@@ -25,7 +25,6 @@
             overflow-x: hidden;
         }
 
-        /* Tombol Plus */
         .top-bar {
             position: fixed; top: 0; right: 0; width: 100%;
             padding: 15px 20px; box-sizing: border-box;
@@ -40,23 +39,22 @@
             pointer-events: auto; display: none;
         }
 
-        /* PENGATURAN HALAMAN (PAGES) */
-        .page { display: none; padding-bottom: 80px; }
-        .page.active { display: block; animation: fadePage 0.3s ease; }
-
+        /* PERBAIKAN ANIMASI PAGE */
+        .page { display: none !important; padding-bottom: 80px; }
+        .page.active { display: block !important; }
+        
+        /* Keyframes untuk Slide */
+        @keyframes slideLeft { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideRight { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadePage { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- HALAMAN HOME (Diisolasi 100%) --- */
-        #page-home {
-            background: linear-gradient(135deg, #1E88E5, #1565C0);
-            min-height: 100vh; color: white;
-        }
+        /* HOME */
+        #page-home { background: linear-gradient(135deg, #1E88E5, #1565C0); min-height: 100vh; color: white; }
         #page-home.active {
-            display: flex; flex-direction: column; align-items: center;
+            display: flex !important; flex-direction: column; align-items: center;
             padding: 70px 20px 20px; box-sizing: border-box;
         }
 
-        /* ANIMASI KHUSUS HOME */
         .anim-item { opacity: 0; transform: translateY(25px); animation: slideUp 0.6s ease forwards; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
@@ -76,9 +74,7 @@
         .home-task-list li { background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between;}
         .all-done { text-align: center; font-style: italic; opacity: 0.8; font-size: 16px; margin: 20px 0; font-weight: 600;}
 
-        /* --- HALAMAN JADWAL, PR, KELOMPOK --- */
         .page-content { padding: 40px 20px 20px; }
-
         .list-card {
             background: var(--card); padding: 15px; border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px;
@@ -98,7 +94,6 @@
         .note-card li { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: #555; }
         .note-card li button { background: transparent; color: red; border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
 
-        /* NAVIGASI BAWAH */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: white; display: flex; justify-content: space-around;
@@ -108,7 +103,6 @@
         .nav-item { text-align: center; color: var(--text-light); font-size: 12px; cursor: pointer; width: 25%; font-weight: 600; transition: 0.3s; }
         .nav-item.active { color: var(--primary); }
 
-        /* MODAL POPUP FORM */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 30; justify-content: center; align-items: center; }
         .modal-box { background: white; padding: 20px; border-radius: 15px; width: 85%; box-shadow: 0 5px 20px rgba(0,0,0,0.2); color: var(--text); }
         .modal-box h3 { margin-top: 0; color: var(--primary); }
@@ -118,16 +112,14 @@
     </style>
 </head>
 <body>
-
     <div class="top-bar">
         <button class="btn-plus" id="btn-add" onclick="bukaModal()">+</button>
     </div>
 
-    <!-- Halaman 1: Home (Dengan Animasi) -->
+    <!-- Halaman 1: Home -->
     <div id="page-home" class="page active">
         <h1 id="sapaan" class="anim-item delay-1">Selamat ...</h1>
         <p id="tanggal-hari" class="anim-item delay-2"></p>
-
         <div class="home-tasks anim-item delay-3">
             <h3>Tugas Mendatang</h3>
             <ul class="home-task-list" id="home-pr-list"></ul>
@@ -158,7 +150,6 @@
         </div>
     </div>
 
-    <!-- Navigasi Bawah -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="pindahHalaman('home', this)">Home</div>
         <div class="nav-item" onclick="pindahHalaman('jadwal', this)">Jadwal</div>
@@ -166,7 +157,6 @@
         <div class="nav-item" onclick="pindahHalaman('kelompok', this)">Kelompok</div>
     </div>
 
-    <!-- Modal Form -->
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <h3 id="modal-title">Tambah Data</h3>
@@ -180,9 +170,7 @@
                 <input type="text" id="j-mapel" placeholder="Mata Pelajaran">
             </div>
             <div id="form-tugas" style="display:none;">
-                <p style="font-size:11px; color:#888; margin:0 0 10px 0; line-height:1.4;">
-                    *Tenggat diatur ke jadwal terdekat.
-                </p>
+                <p style="font-size:11px; color:#888; margin:0 0 10px 0; line-height:1.4;">*Tenggat diatur ke jadwal terdekat.</p>
                 <input type="text" id="t-mapel" placeholder="Masukkan Mata Pelajaran">
                 <input type="text" id="t-anggota" placeholder="Nama Anggota" style="display:none;">
             </div>
@@ -190,7 +178,6 @@
             <button class="btn-close" onclick="tutupModal()">Batal</button>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
