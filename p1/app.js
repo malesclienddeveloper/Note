@@ -1,145 +1,161 @@
-// Register Service Worker & Notifikasi (Offline Mode & Pop-up)
+// Register Service Worker
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
 }
-if ("Notification" in window) { Notification.requestPermission(); }
+
+// Data Storage
+let dataJadwal = JSON.parse(localStorage.getItem('dataJadwal')) || [];
+let dataPR = JSON.parse(localStorage.getItem('dataPR')) || [];
+let dataKelompok = JSON.parse(localStorage.getItem('dataKelompok')) || [];
+
+let halamanAktif = 'home';
 
 // Fungsi Sapaan Waktu Otomatis
-function setSapaan() {
+function setWaktu() {
     const jam = new Date().getHours();
     let sapaan = "Selamat Malam";
     if (jam >= 4 && jam < 11) sapaan = "Selamat Pagi";
     else if (jam >= 11 && jam < 15) sapaan = "Selamat Siang";
     else if (jam >= 15 && jam < 18) sapaan = "Selamat Sore";
     
-    document.getElementById('teksSapaan').innerText = sapaan + ",";
+    document.getElementById('sapaan').innerText = sapaan;
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('tanggal-hari').innerText = new Date().toLocaleDateString('id-ID', options);
 }
 
-// Data Array PR
-let daftarPR = JSON.parse(localStorage.getItem('dataPR')) || [];
-let tabAktif = 'Semua';
-
-// Simpan Tugas
-function simpanTugas() {
-    const kategori = document.getElementById('kategori').value;
-    const mapel = document.getElementById('mapel').value;
-    const tanggal = document.getElementById('tanggal').value;
-    const kelompok = document.getElementById('kelompok').value;
-
-    if(!mapel) {
-        alert("Judul / Mapel wajib diisi!");
-        return;
-    }
-    // Jika bukan catatan biasa, tanggal wajib diisi
-    if(kategori !== 'Catatan' && !tanggal) {
-        alert("Tanggal pengumpulan wajib diisi untuk PR/Tugas!");
-        return;
-    }
-
-    const tugas = { id: Date.now(), kategori, mapel, tanggal, kelompok };
-    daftarPR.push(tugas);
-    localStorage.setItem('dataPR', JSON.stringify(daftarPR));
+// Navigasi Pindah Halaman
+function pindahHalaman(idHalaman, elemenNav, judul) {
+    halamanAktif = idHalaman;
     
-    document.getElementById('mapel').value = '';
-    document.getElementById('tanggal').value = '';
-    document.getElementById('kelompok').value = '';
+    // Ubah Judul Atas
+    document.getElementById('header-title').innerText = judul;
     
-    tampilkanTugas();
-    cekPengingatBesok();
+    // Tampilkan/Sembunyikan Tombol Plus
+    document.getElementById('btn-add').style.display = (idHalaman === 'home') ? 'none' : 'flex';
+
+    // Sembunyikan semua page, tampilkan yang dipilih
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById('page-' + idHalaman).classList.add('active');
+
+    // Ubah warna tombol navigasi bawah
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    elemenNav.classList.add('active');
+
+    renderData();
 }
 
-// Hapus Tugas
-function hapusTugas(id) {
-    daftarPR = daftarPR.filter(tugas => tugas.id !== id);
-    localStorage.setItem('dataPR', JSON.stringify(daftarPR));
-    tampilkanTugas();
-    cekPengingatBesok();
+// Modal Form (Pintar: Menyesuaikan halaman yang sedang dibuka)
+function bukaModal() {
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('form-jadwal').style.display = 'none';
+    document.getElementById('form-tugas').style.display = 'none';
+    document.getElementById('t-anggota').style.display = 'none';
+
+    if (halamanAktif === 'jadwal') {
+        document.getElementById('modal-title').innerText = 'Tambah Jadwal';
+        document.getElementById('form-jadwal').style.display = 'block';
+    } else if (halamanAktif === 'pr') {
+        document.getElementById('modal-title').innerText = 'Tambah PR';
+        document.getElementById('form-tugas').style.display = 'block';
+    } else if (halamanAktif === 'kelompok') {
+        document.getElementById('modal-title').innerText = 'Tambah Tugas Kelompok';
+        document.getElementById('form-tugas').style.display = 'block';
+        document.getElementById('t-anggota').style.display = 'block';
+    }
 }
 
-// Logika Tab Navigasi
-function ubahTab(kategori, elemenTab) {
-    tabAktif = kategori;
-    
-    // Ubah warna tab aktif
-    let tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    elemenTab.classList.add('active');
-
-    // Ubah Judul
-    document.getElementById('judulTab').innerText = kategori === 'Semua' ? 'Semua Tugas & Catatan' : 'Kategori: ' + kategori;
-    
-    tampilkanTugas();
+function tutupModal() {
+    document.getElementById('modal').style.display = 'none';
+    // Reset input
+    document.getElementById('j-mapel').value = '';
+    document.getElementById('t-mapel').value = '';
+    document.getElementById('t-tanggal').value = '';
+    document.getElementById('t-anggota').value = '';
 }
 
-// Menampilkan Data sesuai Tab
-function tampilkanTugas() {
-    const list = document.getElementById('daftarTugas');
-    list.innerHTML = '';
-    
-    // Filter data berdasarkan tab aktif
-    let dataTampil = daftarPR;
-    if (tabAktif !== 'Semua') {
-        dataTampil = daftarPR.filter(tugas => tugas.kategori === tabAktif);
+// Simpan Data
+function simpanData() {
+    const id = Date.now();
+    if (halamanAktif === 'jadwal') {
+        const hari = document.getElementById('j-hari').value;
+        const mapel = document.getElementById('j-mapel').value;
+        const jam = document.getElementById('j-jam').value;
+        if(!mapel) return alert("Mapel harus diisi!");
+        dataJadwal.push({ id, hari, mapel, jam });
+        localStorage.setItem('dataJadwal', JSON.stringify(dataJadwal));
+    } 
+    else if (halamanAktif === 'pr') {
+        const mapel = document.getElementById('t-mapel').value;
+        const tanggal = document.getElementById('t-tanggal').value;
+        if(!mapel || !tanggal) return alert("Mapel dan Tanggal harus diisi!");
+        dataPR.push({ id, mapel, tanggal });
+        localStorage.setItem('dataPR', JSON.stringify(dataPR));
+    }
+    else if (halamanAktif === 'kelompok') {
+        const mapel = document.getElementById('t-mapel').value;
+        const tanggal = document.getElementById('t-tanggal').value;
+        const anggota = document.getElementById('t-anggota').value;
+        if(!mapel || !tanggal) return alert("Mapel dan Tanggal harus diisi!");
+        dataKelompok.push({ id, mapel, tanggal, anggota });
+        localStorage.setItem('dataKelompok', JSON.stringify(dataKelompok));
     }
 
-    if (dataTampil.length === 0) {
-        list.innerHTML = `<p style="text-align:center; color:#888; font-size:12px; margin-top:20px;">Belum ada data di kategori ini.</p>`;
-        return;
-    }
+    tutupModal();
+    renderData();
+}
 
-    dataTampil.forEach(tugas => {
-        let detailTambahan = '';
-        if(tugas.tanggal) detailTambahan += `📅 ${tugas.tanggal} `;
-        if(tugas.kelompok) detailTambahan += `| 👥 ${tugas.kelompok}`;
-        
-        list.innerHTML += `
-            <li class="task-item">
-                <div class="task-info">
-                    <h4><span style="font-size:10px; background:#eee; padding:2px 5px; border-radius:4px;">${tugas.kategori}</span> ${tugas.mapel}</h4>
-                    <p>${detailTambahan}</p>
-                </div>
-                <button class="btn-selesai" onclick="hapusTugas(${tugas.id})">Selesai</button>
-            </li>`;
+// Hapus Data
+function hapusData(tipe, id) {
+    if (tipe === 'jadwal') {
+        dataJadwal = dataJadwal.filter(d => d.id !== id);
+        localStorage.setItem('dataJadwal', JSON.stringify(dataJadwal));
+    } else if (tipe === 'pr') {
+        dataPR = dataPR.filter(d => d.id !== id);
+        localStorage.setItem('dataPR', JSON.stringify(dataPR));
+    } else if (tipe === 'kelompok') {
+        dataKelompok = dataKelompok.filter(d => d.id !== id);
+        localStorage.setItem('dataKelompok', JSON.stringify(dataKelompok));
+    }
+    renderData();
+}
+
+// Render (Tampilkan) Data ke Layar
+function renderData() {
+    // Render Jadwal
+    const listJ = document.getElementById('list-jadwal');
+    listJ.innerHTML = '';
+    dataJadwal.forEach(d => {
+        listJ.innerHTML += `
+            <div class="list-card">
+                <div class="list-info"><h4>${d.mapel}</h4><p>${d.hari}, Jam: ${d.jam || '-'}</p></div>
+                <button class="btn-del" onclick="hapusData('jadwal', ${d.id})">Hapus</button>
+            </div>`;
+    });
+
+    // Render PR
+    const listP = document.getElementById('list-pr');
+    listP.innerHTML = '';
+    dataPR.forEach(d => {
+        listP.innerHTML += `
+            <div class="list-card" style="border-left-color: #FF9800;">
+                <div class="list-info"><h4>${d.mapel}</h4><p>Tenggat: ${d.tanggal}</p></div>
+                <button class="btn-del" onclick="hapusData('pr', ${d.id})">Selesai</button>
+            </div>`;
+    });
+
+    // Render Kelompok
+    const listK = document.getElementById('list-kelompok');
+    listK.innerHTML = '';
+    dataKelompok.forEach(d => {
+        listK.innerHTML += `
+            <div class="list-card" style="border-left-color: #4CAF50;">
+                <div class="list-info"><h4>${d.mapel}</h4><p>Tenggat: ${d.tanggal} <br> Anggota: ${d.anggota || '-'}</p></div>
+                <button class="btn-del" onclick="hapusData('kelompok', ${d.id})">Selesai</button>
+            </div>`;
     });
 }
 
-// Mengecek PR Besok
-function cekPengingatBesok() {
-    const besok = new Date();
-    besok.setDate(besok.getDate() + 1);
-    const tglBesokStr = besok.toISOString().split('T')[0];
-
-    // Cek yang kategorinya PR atau Kelompok dan tanggalnya besok
-    const prBesok = daftarPR.filter(tugas => (tugas.kategori === 'PR' || tugas.kategori === 'Kelompok') && tugas.tanggal === tglBesokStr);
-    
-    const alertBox = document.getElementById('reminderAlert');
-    const listBesok = document.getElementById('besokList');
-    
-    if (prBesok.length > 0) {
-        alertBox.style.display = 'block';
-        listBesok.innerHTML = '';
-        let pesanNotif = "Harus dikumpulkan besok:\n";
-        
-        prBesok.forEach(tugas => {
-            listBesok.innerHTML += `<li>- ${tugas.mapel} (${tugas.kategori})</li>`;
-            pesanNotif += `- ${tugas.mapel}\n`;
-        });
-
-        // Trigger Notifikasi Pop-up HP
-        if (Notification.permission === "granted") {
-            new Notification("PENGINGAT PR BESOK! 📚", {
-                body: pesanNotif,
-                icon: "https://cdn-icons-png.flaticon.com/512/3248/3248834.png"
-            });
-        }
-    } else {
-        alertBox.style.display = 'none';
-    }
-}
-
-// Inisialisasi awal saat web dimuat
-setSapaan();
-tampilkanTugas();
-cekPengingatBesok();
+// Inisialisasi awal
+setWaktu();
+renderData();
