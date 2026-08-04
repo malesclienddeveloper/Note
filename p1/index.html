@@ -3,37 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengingat PR & Kelompok</title>
+    <title>MyNote</title>
     <link rel="manifest" href="manifest.json">
+    <!-- Menggunakan Font Elegan: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
-        input, select, button { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; font-weight: bold; }
-        .alert { background-color: #ffcccc; padding: 10px; color: red; border-radius: 5px; display: none; margin-bottom: 15px;}
+        :root {
+            --primary: #4A90E2;
+            --bg: #F4F7F6;
+            --card: #FFFFFF;
+            --text: #333333;
+            --text-light: #888888;
+        }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text);
+            margin: 0; padding: 0;
+            padding-bottom: 80px; /* Ruang untuk tab bawah */
+        }
+        .header {
+            background: linear-gradient(135deg, #4A90E2, #50E3C2);
+            color: white;
+            padding: 30px 20px 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .header p { margin: 5px 0 0; font-size: 14px; font-weight: 300; opacity: 0.9; }
+        
+        .container { padding: 20px; }
+        
+        .card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .card h3 { margin-top: 0; font-size: 16px; color: var(--primary); }
+        
+        input, select, button { 
+            width: 100%; padding: 12px; margin-top: 8px; margin-bottom: 15px; 
+            border: 1px solid #E0E0E0; border-radius: 10px; 
+            box-sizing: border-box; font-family: 'Poppins', sans-serif;
+            background: #FAFAFA;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); background: #FFF; }
+        button { 
+            background-color: var(--primary); color: white; border: none; 
+            font-weight: 600; font-size: 14px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+            transition: 0.3s;
+        }
+        button:active { transform: scale(0.98); }
+        
+        .alert { background-color: #FFE6E6; color: #D32F2F; padding: 15px; border-radius: 10px; display: none; margin-bottom: 20px; font-size: 14px; border-left: 5px solid #D32F2F;}
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        .task-item {
+            background: var(--card); padding: 15px; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+        .task-info h4 { margin: 0; font-size: 15px; }
+        .task-info p { margin: 4px 0 0; font-size: 12px; color: var(--text-light); }
+        .btn-selesai { width: auto; padding: 6px 12px; margin: 0; font-size: 12px; background: #FF5252; box-shadow: none; }
+
+        /* TAB BAR BAWAH */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: white; display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top-left-radius: 15px; border-top-right-radius: 15px;
+        }
+        .tab {
+            text-align: center; color: var(--text-light); font-size: 12px;
+            cursor: pointer; padding: 5px 10px; width: 100%;
+        }
+        .tab.active { color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <h2>Asisten Tugas Sekolah</h2>
-    
-    <div id="reminderAlert" class="alert">
-        <strong>⚠️ PENGINGAT:</strong> Ada PR yang harus dikumpulkan besok!
-        <ul id="besokList"></ul>
+    <div class="header">
+        <h1 id="teksSapaan">Selamat Pagi,</h1>
+        <p>NOTE</p>
     </div>
 
-    <div class="card">
-        <h3>Tambah Tugas / PR</h3>
-        <input type="text" id="mapel" placeholder="Mata Pelajaran (Contoh: Matematika)">
-        <label>Tanggal Dikumpulkan:</label>
-        <input type="date" id="tanggal">
-        <input type="text" id="kelompok" placeholder="Anggota Kelompok (Opsional, pisahkan dengan koma)">
-        <button onclick="simpanTugas()">Simpan Tugas</button>
-    </div>
+    <div class="container">
+        <div id="reminderAlert" class="alert">
+            <strong>⚠️ Besok Kumpul!</strong>
+            <ul id="besokList"></ul>
+        </div>
 
-    <div class="card">
-        <h3>Daftar Tugas Belum Selesai</h3>
+        <div class="card">
+            <h3>Buat Catatan / Tugas Baru</h3>
+            <select id="kategori">
+                <option value="PR">PR Individu</option>
+                <option value="Kelompok">Tugas Kelompok</option>
+                <option value="Catatan">Catatan Biasa</option>
+            </select>
+            <input type="text" id="mapel" placeholder="Judul / Mata Pelajaran">
+            <input type="date" id="tanggal">
+            <input type="text" id="kelompok" placeholder="Anggota/Detail (Opsional)">
+            <button onclick="simpanTugas()">Simpan</button>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 10px;" id="judulTab">Semua Tugas</h3>
         <ul id="daftarTugas"></ul>
+    </div>
+
+    <!-- Navigasi Bawah -->
+    <div class="tab-bar">
+        <div class="tab active" onclick="ubahTab('Semua', this)">Semua</div>
+        <div class="tab" onclick="ubahTab('PR', this)">PR</div>
+        <div class="tab" onclick="ubahTab('Kelompok', this)">Kelompok</div>
+        <div class="tab" onclick="ubahTab('Catatan', this)">Catatan</div>
     </div>
 
     <script src="app.js"></script>
