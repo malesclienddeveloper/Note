@@ -1,4 +1,3 @@
-// Register Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
 }
@@ -16,7 +15,6 @@ function setWaktu() {
     else if (jam >= 15 && jam < 18) sapaan = "Selamat Sore";
     
     document.getElementById('sapaan').innerText = sapaan;
-
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('tanggal-hari').innerText = new Date().toLocaleDateString('id-ID', options);
 }
@@ -24,21 +22,18 @@ function setWaktu() {
 function pindahHalaman(idHalaman, elemenNav) {
     halamanAktif = idHalaman;
     
-    // LOGIKA PENTING: Jika di Home, body jadi biru. Jika selain Home, hapus birunya.
-    if (idHalaman === 'home') {
-        document.body.classList.add('is-home');
-    } else {
-        document.body.classList.remove('is-home');
-    }
-
+    // Tombol Plus hanya tampil jika BUKAN di Home
     document.getElementById('btn-add').style.display = (idHalaman === 'home') ? 'none' : 'flex';
 
+    // Pindah Halaman
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById('page-' + idHalaman).classList.add('active');
 
+    // Ubah status Navigasi
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
     elemenNav.classList.add('active');
 
+    // Render ulang data jika perlu
     renderData();
 }
 
@@ -97,8 +92,7 @@ function simpanData() {
         if(!mapel) return alert("Mapel harus diisi!");
         dataJadwal.push({ id, hari, mapel });
         localStorage.setItem('dataJadwal', JSON.stringify(dataJadwal));
-    } 
-    else {
+    } else {
         const mapel = document.getElementById('t-mapel').value;
         if(!mapel) return alert("Mata pelajaran harus diisi!");
 
@@ -111,8 +105,7 @@ function simpanData() {
         if (halamanAktif === 'pr') {
             dataPR.push({ id, mapel, tanggal: tanggalOtomatis });
             localStorage.setItem('dataPR', JSON.stringify(dataPR));
-        }
-        else if (halamanAktif === 'kelompok') {
+        } else if (halamanAktif === 'kelompok') {
             const anggota = document.getElementById('t-anggota').value;
             dataKelompok.push({ id, mapel, tanggal: tanggalOtomatis, anggota });
             localStorage.setItem('dataKelompok', JSON.stringify(dataKelompok));
@@ -201,7 +194,5 @@ function renderData() {
     });
 }
 
-// Set background awal saat baru buka web
-document.body.classList.add('is-home');
 setWaktu();
 renderData();
