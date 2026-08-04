@@ -18,10 +18,18 @@
         }
         body { 
             font-family: 'Poppins', sans-serif; 
-            background-color: var(--bg); 
+            background-color: var(--bg); /* Warna default (abu bersih) untuk Jadwal/PR/Kelompok */
             color: var(--text);
             margin: 0; padding: 0;
             overflow-x: hidden;
+            min-height: 100vh;
+            transition: background 0.3s ease; /* Animasi transisi warna halus */
+        }
+        
+        /* CLASS KHUSUS BACKGROUND BIRU (HANYA UNTUK HOME) */
+        body.is-home {
+            background: linear-gradient(135deg, #1E88E5, #1565C0);
+            background-attachment: fixed;
         }
 
         /* HEADER ATAS (Hanya Tombol Plus di Kanan) */
@@ -29,14 +37,14 @@
             position: fixed; top: 0; right: 0; width: 100%;
             padding: 15px 20px; box-sizing: border-box;
             display: flex; justify-content: flex-end; align-items: center;
-            z-index: 10; pointer-events: none; /* Supaya tidak menghalangi klik */
+            z-index: 10; pointer-events: none;
         }
         .btn-plus {
             background: #FF9800; color: white; border: none;
             width: 45px; height: 45px; border-radius: 50%; font-size: 28px;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            pointer-events: auto; display: none; /* Sembunyi di Home */
+            pointer-events: auto; display: none;
         }
 
         /* AREA KONTEN (PAGES) */
@@ -45,28 +53,27 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* DESAIN HOME (Background Biru Penuh) */
+        /* DESAIN HOME */
         #page-home {
-            background: linear-gradient(135deg, #1E88E5, #1565C0);
-            min-height: 100vh; color: white;
+            color: white; /* Teks putih khusus di Home */
             display: flex; flex-direction: column; align-items: center;
             padding: 60px 20px 20px; box-sizing: border-box;
         }
-        #sapaan { font-size: 32px; font-weight: 600; margin: 20px 0 5px; }
-        #tanggal-hari { font-size: 14px; opacity: 0.8; margin-bottom: 30px; }
+        #sapaan { font-size: 32px; font-weight: 600; margin: 20px 0 5px; text-align: center;}
+        #tanggal-hari { font-size: 14px; opacity: 0.8; margin-bottom: 30px; text-align: center;}
         
         .home-tasks {
             background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px); width: 100%;
+            backdrop-filter: blur(10px); width: 100%; color: white;
             border-radius: 15px; padding: 20px; box-sizing: border-box;
         }
         .home-tasks h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
         .home-task-list { list-style: none; padding: 0; margin: 0; }
-        .home-task-list li { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between;}
+        .home-task-list li { background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between;}
         .all-done { text-align: center; font-style: italic; opacity: 0.7; font-size: 18px; margin: 20px 0; font-weight: 600;}
 
         /* DESAIN HALAMAN LAIN (Jadwal, PR, Kelompok) */
-        .page-content { padding: 60px 20px 20px; }
+        .page-content { padding: 40px 20px 20px; }
 
         /* KARTU DAFTAR (Untuk PR & Kelompok) */
         .list-card {
@@ -75,7 +82,7 @@
             border-left: 4px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .list-info h4 { margin: 0; font-size: 15px; }
+        .list-info h4 { margin: 0; font-size: 15px; color: var(--text); }
         .list-info p { margin: 4px 0 0; font-size: 12px; color: var(--text-light); }
         .btn-del { background: #FF5252; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
@@ -112,7 +119,7 @@
         }
         .modal-box {
             background: white; padding: 20px; border-radius: 15px; width: 85%;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); color: var(--text);
         }
         .modal-box h3 { margin-top: 0; color: var(--primary); }
         input, select, button.btn-save {
@@ -125,28 +132,25 @@
 </head>
 <body>
 
-    <!-- Header Atas (Hanya Tombol) -->
+    <!-- Tombol Plus (Sembunyi di Home) -->
     <div class="top-bar">
         <button class="btn-plus" id="btn-add" onclick="bukaModal()">+</button>
     </div>
 
-    <!-- Area Halaman -->
     <div class="content-area">
         
-        <!-- Halaman 1: Home (Biru Full) -->
+        <!-- Halaman 1: Home (Sapaan dan List) -->
         <div id="page-home" class="page active">
             <h1 id="sapaan">Selamat ...</h1>
             <p id="tanggal-hari"></p>
 
             <div class="home-tasks">
                 <h3>Tugas Mendatang</h3>
-                <ul class="home-task-list" id="home-pr-list">
-                    <!-- PR muncul di sini -->
-                </ul>
+                <ul class="home-task-list" id="home-pr-list"></ul>
             </div>
         </div>
 
-        <!-- Halaman 2: Jadwal (Desain Note) -->
+        <!-- Halaman 2: Jadwal -->
         <div id="page-jadwal" class="page">
             <div class="page-content">
                 <h3 style="margin-top:0; color:var(--primary);">Jadwal Mingguan</h3>
@@ -180,12 +184,10 @@
         <div class="nav-item" onclick="pindahHalaman('kelompok', this)">Kelompok</div>
     </div>
 
-    <!-- Modal Popup Form -->
+    <!-- Modal Form -->
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <h3 id="modal-title">Tambah Data</h3>
-            
-            <!-- Form Jadwal -->
             <div id="form-jadwal" style="display:none;">
                 <select id="j-hari">
                     <option value="Senin">Senin</option><option value="Selasa">Selasa</option>
@@ -195,16 +197,13 @@
                 </select>
                 <input type="text" id="j-mapel" placeholder="Mata Pelajaran">
             </div>
-
-            <!-- Form PR & Kelompok (Tanpa Input Tanggal) -->
             <div id="form-tugas" style="display:none;">
                 <p style="font-size:11px; color:#888; margin:0 0 10px 0; line-height:1.4;">
-                    *Tenggat waktu akan otomatis diatur ke jadwal mapel terdekat. Pastikan mapel sudah ada di Jadwal.
+                    *Tenggat diatur ke jadwal terdekat.
                 </p>
                 <input type="text" id="t-mapel" placeholder="Masukkan Mata Pelajaran">
-                <input type="text" id="t-anggota" placeholder="Nama Anggota (Hanya untuk kelompok)" style="display:none;">
+                <input type="text" id="t-anggota" placeholder="Nama Anggota" style="display:none;">
             </div>
-
             <button class="btn-save" onclick="simpanData()">Simpan</button>
             <button class="btn-close" onclick="tutupModal()">Batal</button>
         </div>
