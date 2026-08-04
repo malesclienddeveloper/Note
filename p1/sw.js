@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tugas-cache-v1';
+const CACHE_NAME = 'tugas-cache-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -23,5 +23,19 @@ self.addEventListener('fetch', event => {
       .then(response => {
         return response || fetch(event.request);
       })
+  );
+});
+// Menghapus cache versi lama saat ada versi baru
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
