@@ -1,13 +1,13 @@
 {
-  "name": "Pengingat Tugas",
-  "short_name": "TugasKu",
+  "name": "Note",
+  "short_name": "Note",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3248/3248834.png",
+      "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZnv4gzSbry3Ii4dvcbZPRblUIGSZQbpZ5eA&s",
       "sizes": "512x512",
       "type": "image/png"
     }

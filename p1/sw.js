@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tugas-cache-v8';// <--- PASTIKAN INI DIUBAH KE v3
+const CACHE_NAME = 'tugas-cache-v9';// <--- PASTIKAN INI DIUBAH KE v3
 const urlsToCache = [
   './',
   './index.html',
