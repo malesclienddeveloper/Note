@@ -1,0 +1,10 @@
+{
+  "name": "fankit-dl",
+  "version": "2.0.0",
+  "description": "Downloader ringan aset Supercell Fankit untuk PC & Termux (skip, resume, kompres otomatis)",
+  "type": "module",
+  "bin": { "fankit-dl": "bin/fankit-dl.mjs" },
+  "engines": { "node": ">=18" },
+  "optionalDependencies": { "puppeteer-core": "^22.15.0" },
+  "license": "MIT"
+}
